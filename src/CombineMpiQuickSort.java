@@ -5,7 +5,7 @@ import mpi.MPI;
 import mpi.MPIException;
 import mpi.Status;
 
-public class RecursiveMpiQuickSort {
+public class CombineMpiQuickSort {
 
 	static int doPartition(int arr[], int left, int right) {
 		int i = left, j = right;
@@ -85,6 +85,7 @@ public class RecursiveMpiQuickSort {
 
 		MPI.Init(args);
 		int[] globalData = null;
+		double startTime = 0;
 		int n = DEFAULT_INPUT_SIZE;
 		int max = 0;
 		try {
@@ -106,14 +107,35 @@ public class RecursiveMpiQuickSort {
 			if (n < 100) {
 				System.out.println("From ROOT - Input array: " + Arrays.toString(globalData));
 			}
-			double startTime = MPI.wtime();
+			startTime = MPI.wtime();
+		}
+
+		int localSize = n / nProcessors;
+		if (myself == nProcessors - 1) {
+			localSize += n % nProcessors;
+		}
+
+		int[] localData = new int[localSize];
+		MPI.COMM_WORLD.scatter(globalData, localSize, MPI.INT, localData, localSize, MPI.INT, ROOT);
+
+		quickSort(localData, 0, localSize - 1);
+		if (localSize < 100) {
+			System.out.println("\nFrom Processor " + myself + " - Local Result: " + Arrays.toString(localData));
+		}
+
+		MPI.COMM_WORLD.gather(localData, localSize, MPI.INT, globalData, localSize, MPI.INT, ROOT);
+		if (myself == ROOT) {
+			globalData = generateRandomArray(n, max);
+			if (n < 100) {
+				System.out.println("From ROOT - Input array: " + Arrays.toString(globalData));
+			}
 			parallelQuickSort(globalData, 0, globalData.length - 1, myself, nProcessors - 1, 0);
 			double endTime = MPI.wtime();
 			System.out.printf("\nFrom ROOT - Total Time: %.2f\n", (endTime - startTime));
 			if (n < 100) {
 				System.out.println("\nFrom ROOT - Result: " + Arrays.toString(globalData));
 			}
-			
+
 			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
 				int[] copyArr = Arrays.copyOf(globalData, n);
 				Arrays.sort(copyArr);
@@ -125,8 +147,8 @@ public class RecursiveMpiQuickSort {
 				index_count++;
 
 			Status status = MPI.COMM_WORLD.probe(MPI.ANY_SOURCE, MPI.ANY_TAG);
-			int localSize = status.getCount(MPI.INT);
-			int[] localData = new int[localSize];
+			localSize = status.getCount(MPI.INT);
+			localData = new int[localSize];
 			MPI.COMM_WORLD.recv(localData, localSize, MPI.INT, MPI.ANY_SOURCE, MPI.ANY_TAG);
 			parallelQuickSort(localData, 0, localSize - 1, myself, nProcessors - 1, index_count);
 			MPI.COMM_WORLD.send(localData, localSize, MPI.INT, status.getSource(), status.getTag());

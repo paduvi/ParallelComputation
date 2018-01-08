@@ -100,7 +100,7 @@ public class LinearMpiQuickSort {
 				System.out.println("\nFrom ROOT - Result: " + Arrays.toString(globalData));
 			}
 
-			if (Boolean.parseBoolean(System.getenv("debug"))) {
+			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
 				int[] copyArr = Arrays.copyOf(globalData, n);
 				Arrays.sort(copyArr);
 				System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));
