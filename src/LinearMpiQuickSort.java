@@ -45,7 +45,7 @@ public class LinearMpiQuickSort {
 		}
 		return arr;
 	}
-	
+
 	final static int ROOT = 0;
 	final static int DEFAULT_INPUT_SIZE = 20;
 
@@ -100,9 +100,11 @@ public class LinearMpiQuickSort {
 				System.out.println("\nFrom ROOT - Result: " + Arrays.toString(globalData));
 			}
 
-			int[] copyArr = Arrays.copyOf(globalData, n);
-			Arrays.sort(copyArr);
-			System.out.println("Compare Result: " + Arrays.equals(globalData, copyArr));
+			if (Boolean.parseBoolean(System.getenv("debug"))) {
+				int[] copyArr = Arrays.copyOf(globalData, n);
+				Arrays.sort(copyArr);
+				System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));
+			}
 		}
 
 		MPI.Finalize();

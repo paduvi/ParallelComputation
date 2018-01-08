@@ -62,5 +62,10 @@ public class QuickSort {
 		if (n < 100) {
 			System.out.println("Result: " + Arrays.toString(globalData));
 		}
+		if (Boolean.parseBoolean(System.getenv("debug"))) {
+			int[] copyArr = Arrays.copyOf(globalData, n);
+			Arrays.sort(copyArr);
+			System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));
+		}
 	}
 }

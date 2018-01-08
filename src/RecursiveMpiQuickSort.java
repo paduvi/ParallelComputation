@@ -113,9 +113,12 @@ public class RecursiveMpiQuickSort {
 			if (n < 100) {
 				System.out.println("\nFrom ROOT - Result: " + Arrays.toString(globalData));
 			}
-			int[] copyArr = Arrays.copyOf(globalData, n);
-			Arrays.sort(copyArr);
-			System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));
+			
+			if (Boolean.parseBoolean(System.getenv("debug"))) {
+				int[] copyArr = Arrays.copyOf(globalData, n);
+				Arrays.sort(copyArr);
+				System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));
+			}
 		} else {
 			int index_count = 0;
 			while (Math.pow(2, index_count) <= myself)
