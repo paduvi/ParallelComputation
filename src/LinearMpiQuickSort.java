@@ -6,6 +6,9 @@ import mpi.MPIException;
 
 public class LinearMpiQuickSort {
 
+	public final static int ROOT = 0;
+	public final static int DEFAULT_INPUT_SIZE = 20;
+
 	static int doPartition(int arr[], int left, int right) {
 		int i = left, j = right;
 		int tmp;
@@ -46,9 +49,6 @@ public class LinearMpiQuickSort {
 		return arr;
 	}
 
-	final static int ROOT = 0;
-	final static int DEFAULT_INPUT_SIZE = 20;
-
 	public static void main(String[] args) throws MPIException {
 
 		MPI.Init(args);
@@ -64,17 +64,15 @@ public class LinearMpiQuickSort {
 		}
 
 		int myself = MPI.COMM_WORLD.getRank();
-		int nProcessors = MPI.COMM_WORLD.getSize();
-		if (nProcessors > n) {
-			System.out.println("SIZE of array is less than number of processors!");
-			System.exit(1);
-		}
+		int nProcessors = Math.min(MPI.COMM_WORLD.getSize(), n);
 
 		if (myself == ROOT) {
 			globalData = generateRandomArray(n, max);
-			if (n < 100) {
+
+			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
 				System.out.println("From ROOT - Input array: " + Arrays.toString(globalData));
 			}
+
 			startTime = MPI.wtime();
 		}
 
@@ -87,20 +85,17 @@ public class LinearMpiQuickSort {
 		MPI.COMM_WORLD.scatter(globalData, localSize, MPI.INT, localData, localSize, MPI.INT, ROOT);
 
 		quickSort(localData, 0, localSize - 1);
-		if (localSize < 100) {
-			System.out.println("\nFrom Processor " + myself + " - Local Result: " + Arrays.toString(localData));
-		}
 
 		MPI.COMM_WORLD.gather(localData, localSize, MPI.INT, globalData, localSize, MPI.INT, ROOT);
+
 		if (myself == ROOT) {
 			quickSort(globalData, 0, n - 1);
 			endTime = MPI.wtime();
+
 			System.out.printf("\nFrom ROOT - Total Time: %.2f\n", (endTime - startTime));
-			if (n < 100) {
-				System.out.println("\nFrom ROOT - Result: " + Arrays.toString(globalData));
-			}
 
 			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+				System.out.println("\nFrom ROOT - Result: " + Arrays.toString(globalData));
 				int[] copyArr = Arrays.copyOf(globalData, n);
 				Arrays.sort(copyArr);
 				System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));

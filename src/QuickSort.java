@@ -3,6 +3,8 @@ import java.util.Random;
 
 public class QuickSort {
 
+	public final static int DEFAULT_INPUT_SIZE = 20;
+
 	static int doPartition(int arr[], int left, int right) {
 		int i = left, j = right;
 		int tmp;
@@ -43,8 +45,6 @@ public class QuickSort {
 		return arr;
 	}
 
-	final static int DEFAULT_INPUT_SIZE = 20;
-
 	public static void main(String[] args) {
 		int n = DEFAULT_INPUT_SIZE;
 		int max = 0;
@@ -55,14 +55,19 @@ public class QuickSort {
 			max = 5 * n;
 		}
 		int[] globalData = generateRandomArray(n, max);
+
+		if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+			System.out.println("Input: " + Arrays.toString(globalData));
+		}
+
 		double startTime = System.currentTimeMillis();
 		quickSort(globalData, 0, n - 1);
 		double endTime = System.currentTimeMillis();
+
 		System.out.printf("Total Time: %.2f\n", (endTime - startTime));
-		if (n < 100) {
-			System.out.println("Result: " + Arrays.toString(globalData));
-		}
+
 		if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+			System.out.println("Result: " + Arrays.toString(globalData));
 			int[] copyArr = Arrays.copyOf(globalData, n);
 			Arrays.sort(copyArr);
 			System.out.println("\nFrom ROOT - Compare Result: " + Arrays.equals(globalData, copyArr));

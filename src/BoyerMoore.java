@@ -12,13 +12,17 @@ import java.util.Random;
  * <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
  */
 public class BoyerMoore {
+
+	public final static int DEFAULT_TEXT_SIZE = 20;
+	public final static int DEFAULT_PATTERN_SIZE = 5;
+
 	private final int R; // the radix
 	private int[] right; // the bad-character skip array
 
 	private String pat; // or as a string
 
 	/**
-	 * Preprocesses the pattern string.
+	 * Pre-process the pattern string.
 	 *
 	 * @param pat
 	 *            the pattern string
@@ -36,7 +40,7 @@ public class BoyerMoore {
 	}
 
 	/**
-	 * Returns the index of the first occurrrence of the pattern string in the
+	 * Returns the index of the first occurrence of the pattern string in the
 	 * text string.
 	 *
 	 * @param txt
@@ -82,9 +86,6 @@ public class BoyerMoore {
 		return txt.substring(index, index + len);
 	}
 
-	final static int DEFAULT_TEXT_SIZE = 20;
-	final static int DEFAULT_PATTERN_SIZE = 5;
-
 	/**
 	 * Takes a pattern string and an input string as command-line arguments;
 	 * searches for the pattern string in the text string; and prints the first
@@ -114,7 +115,7 @@ public class BoyerMoore {
 		System.out.println("text:    " + txt);
 
 		if (offset == -1) {
-			System.out.println("Pattern mismatched: " + pat);
+			System.out.println("pattern mismatched: " + pat);
 		} else {
 			System.out.print("pattern: ");
 			for (int i = 0; i < offset; i++)
