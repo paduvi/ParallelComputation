@@ -27,7 +27,7 @@ public class StatisticQuickSort {
 
 	public static void main(String[] args) throws IOException {
 		int np = 16;
-		int n = 10;
+		int n = 9;
 		String[] classes = new String[] { "QuickSort", "LinearMpiQuickSort", "RecursiveMpiQuickSort",
 				"CombineMpiQuickSort" };
 		StringBuilder builder = new StringBuilder();

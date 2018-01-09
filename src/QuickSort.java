@@ -64,7 +64,7 @@ public class QuickSort {
 		quickSort(globalData, 0, n - 1);
 		double endTime = System.currentTimeMillis();
 
-		System.out.printf("Total Time: %.2f\n", (endTime - startTime));
+		System.out.printf("Total Time: %.2f\n", (endTime - startTime) / 1000);
 
 		if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
 			System.out.println("Result: " + Arrays.toString(globalData));

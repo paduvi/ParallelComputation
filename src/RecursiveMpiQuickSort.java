@@ -89,7 +89,7 @@ public class RecursiveMpiQuickSort {
 		int max = 0;
 		try {
 			n = Integer.parseInt(args[0]);
-			max = Integer.parseInt(args[1]);
+			max = Integer.valueOf(args[1]);
 		} catch (Exception e) {
 			max = 5 * n;
 		}
