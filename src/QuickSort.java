@@ -49,8 +49,8 @@ public class QuickSort {
 		int n = DEFAULT_INPUT_SIZE;
 		int max = 0;
 		try {
-			n = Integer.valueOf(args[0]);
-			max = Integer.valueOf(args[1]);
+			n = Integer.parseInt(args[0]);
+			max = Integer.parseInt(args[1]);
 		} catch (Exception e) {
 			max = 5 * n;
 		}

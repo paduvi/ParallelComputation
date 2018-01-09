@@ -98,8 +98,8 @@ public class BoyerMoore {
 		int n = DEFAULT_TEXT_SIZE;
 		int m = DEFAULT_PATTERN_SIZE;
 		try {
-			n = Integer.valueOf(args[0]);
-			m = Integer.valueOf(args[1]);
+			n = Integer.parseInt(args[0]);
+			m = Integer.parseInt(args[1]);
 			assert n >= m;
 		} catch (Exception e) {
 			m = Math.min(m, n);
@@ -108,9 +108,11 @@ public class BoyerMoore {
 		String txt = generateRandomString(n);
 		String pat = generateRandomSubstring(txt, m);
 
+		double startTime = System.currentTimeMillis();
 		BoyerMoore boyermoore = new BoyerMoore(pat);
 		int offset = boyermoore.search(txt);
-
+		double endTime = System.currentTimeMillis();
+		
 		// print results
 		System.out.println("text:    " + txt);
 
@@ -121,6 +123,8 @@ public class BoyerMoore {
 			for (int i = 0; i < offset; i++)
 				System.out.print(" ");
 			System.out.println(pat);
+			
+			System.out.printf("\nTotal Time: %.2f\n", (endTime - startTime));
 		}
 	}
 }

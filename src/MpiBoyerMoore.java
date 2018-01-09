@@ -157,8 +157,8 @@ public class MpiBoyerMoore {
 		int n = DEFAULT_TEXT_SIZE;
 		int m = DEFAULT_PATTERN_SIZE;
 		try {
-			n = Integer.valueOf(args[0]);
-			m = Integer.valueOf(args[1]);
+			n = Integer.parseInt(args[0]);
+			m = Integer.parseInt(args[1]);
 			assert n >= m;
 		} catch (Exception e) {
 			m = Math.min(m, n);
