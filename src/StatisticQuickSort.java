@@ -13,6 +13,7 @@ public class StatisticQuickSort {
 		String line = null;
 		try {
 			while ((line = input.readLine()) != null) {
+				System.out.println(line);
 				Matcher m = Pattern.compile("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?").matcher(line);
 				if (line.toLowerCase().contains("time") && m.find()) {
 					return Double.parseDouble(m.group());
@@ -36,8 +37,11 @@ public class StatisticQuickSort {
 				double m = Math.pow(10, j);
 				String temp = i + "\t" + m;
 				for (String clazz : classes) {
+					String command = "mpirun -np " + i + " java " + clazz + " " + m;
+					System.out.println("\n=============");
+					System.out.println(command);
 					Runtime rt = Runtime.getRuntime();
-					Process pr = rt.exec("mpirun -np " + i + " java " + clazz + " " + m);
+					Process pr = rt.exec(command);
 					temp += "\t" + watch(pr);
 				}
 				builder.append(temp).append("\n");
@@ -49,5 +53,6 @@ public class StatisticQuickSort {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("saved to file!");
 	}
 }
