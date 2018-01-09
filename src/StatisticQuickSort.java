@@ -28,21 +28,39 @@ public class StatisticQuickSort {
 	public static void main(String[] args) throws IOException {
 		int np = 16;
 		int n = 9;
-		String[] classes = new String[] { "QuickSort", "LinearMpiQuickSort", "RecursiveMpiQuickSort",
-				"CombineMpiQuickSort" };
+
+		int times = 10;
+		String[] classes = new String[] { "LinearMpiQuickSort", "RecursiveMpiQuickSort", "CombineMpiQuickSort" };
+
+		double[] normalResult = new double[n];
+		for (int i = 1; i <= n; i++) {
+			int m = (int) Math.pow(10, i);
+			String command = "java QuickSort " + m;
+			System.out.println("\n=============");
+			System.out.println(command);
+			Runtime rt = Runtime.getRuntime();
+			Process pr = rt.exec(command);
+			normalResult[i - 1] = watch(pr);
+		}
+
 		StringBuilder builder = new StringBuilder();
 
 		for (int i = 1; i <= np; i++) {
 			for (int j = 1; j <= n; j++) {
 				int m = (int) Math.pow(10, j);
-				String temp = i + "\t" + m;
+				String temp = i + "\t" + m + "\t" + normalResult[j - 1];
 				for (String clazz : classes) {
-					String command = "mpirun -np " + i + " java " + clazz + " " + m;
-					System.out.println("\n=============");
-					System.out.println(command);
-					Runtime rt = Runtime.getRuntime();
-					Process pr = rt.exec(command);
-					temp += "\t" + watch(pr);
+					double result = 0;
+					for (int k = 0; k < times; k++) {
+						String command = "mpirun -np " + i + " java " + clazz + " " + m;
+						System.out.println("\n=============");
+						System.out.println(command);
+						Runtime rt = Runtime.getRuntime();
+						Process pr = rt.exec(command);
+						result += watch(pr);
+					}
+
+					temp += "\t" + result / times;
 				}
 				builder.append(temp).append("\n");
 			}
