@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,7 @@ public class StatisticQuickSort {
 			normalResult[i - 1] = watch(pr);
 		}
 
-		StringBuilder builder = new StringBuilder();
+		// StringBuilder builder = new StringBuilder();
 
 		for (int i = 1; i <= np; i++) {
 			for (int j = 1; j <= n; j++) {
@@ -51,26 +52,31 @@ public class StatisticQuickSort {
 				String temp = i + "\t" + m + "\t" + normalResult[j - 1];
 				for (String clazz : classes) {
 					double result = 0;
+					int success = 0;
 					for (int k = 0; k < times; k++) {
 						String command = "mpirun -np " + i + " java " + clazz + " " + m;
 						System.out.println("\n=============");
 						System.out.println(command);
 						Runtime rt = Runtime.getRuntime();
 						Process pr = rt.exec(command);
-						result += watch(pr);
+						if (result != -1) {
+							result += watch(pr);
+							success++;
+						}
 					}
 
-					temp += "\t" + result / times;
+					if (success != 0) {
+						temp += "\t" + result / success;
+					} else {
+						temp += "\t-1";
+					}
+
 				}
-				builder.append(temp).append("\n");
+				Files.write(Paths.get("report-qsort.txt"), (temp + "\n").getBytes(), StandardOpenOption.APPEND);
+				// builder.append(temp).append("\n");
 			}
 		}
 
-		try {
-			Files.write(Paths.get("report-qsort.txt"), builder.toString().getBytes());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		System.out.println("saved to file!");
 	}
 }
