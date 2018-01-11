@@ -39,8 +39,9 @@ public class StatisticQuickSort {
 			String command = "java QuickSort " + m;
 			System.out.println("\n=============");
 			System.out.println(command);
-			Runtime rt = Runtime.getRuntime();
-			Process pr = rt.exec(command);
+			ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+			builder.redirectErrorStream(true);
+			Process pr = builder.start();
 			normalResult[i - 1] = watch(pr);
 		}
 
@@ -57,10 +58,12 @@ public class StatisticQuickSort {
 						String command = "mpirun -np " + i + " java " + clazz + " " + m;
 						System.out.println("\n=============");
 						System.out.println(command);
-						Runtime rt = Runtime.getRuntime();
-						Process pr = rt.exec(command);
-						if (result != -1) {
-							result += watch(pr);
+						ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+						builder.redirectErrorStream(true);
+						Process pr = builder.start();
+						double tempResult = watch(pr);
+						if (tempResult != -1) {
+							result += tempResult;
 							success++;
 						}
 					}
