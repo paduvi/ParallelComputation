@@ -30,7 +30,6 @@ public class MpiBoyerMoore {
 	private int[] right; // the bad-character skip array
 
 	private String pat; // or as a string
-	private int nProcessors;
 
 	/**
 	 * Pre-process the pattern string.
@@ -41,7 +40,6 @@ public class MpiBoyerMoore {
 	 */
 	public MpiBoyerMoore(String pat, int nProcessors) throws MPIException {
 		this.pat = pat;
-		this.nProcessors = nProcessors;
 
 		// position of rightmost occurrence of c in the pattern
 		right = new int[R];
@@ -64,73 +62,52 @@ public class MpiBoyerMoore {
 	 *         text string; -1 if no such match
 	 * @throws MPIException
 	 */
-	public int search(String txt) throws MPIException {
-		int temp = this.nProcessors;
-		while (temp > 0) {
-			int result = search(txt, temp--);
-			if (result != -1)
-				return result;
-		}
-		return -1;
-	}
-
-	public int search(String txt, int nProcessors) throws MPIException {
+	public int search(String txt) {
 		int m = pat.length();
 		int n = txt.length();
 		int skip;
 		for (int i = 0; i <= n - m; i += skip) {
-			int localSize = m / nProcessors;
-			for (int j = 1; j < nProcessors; j++) {
-				StringBuilder builder = new StringBuilder();
-				builder.append(txt.substring(i + (j - 1) * localSize, i + j * localSize));
-				builder.append(pat.substring((j - 1) * localSize, j * localSize));
-				MPI.COMM_WORLD.send(builder.toString().toCharArray(), localSize * 2, MPI.CHAR, j, COMPUTE_TAG);
-			}
-
 			skip = 0;
-
-			for (int j = m - 1; j >= (nProcessors - 1) * localSize; j--) {
+			for (int j = m - 1; j >= 0; j--) {
 				if (pat.charAt(j) != txt.charAt(i + j)) {
 					skip = Math.max(1, j - right[txt.charAt(i + j)]);
 					break;
 				}
 			}
-
-			for (int j = 1; j < nProcessors; j++) {
-				int[] temp = new int[1];
-				MPI.COMM_WORLD.recv(temp, 1, MPI.INT, j, COMPUTE_TAG);
-				if (temp[0] != 0) {
-					skip = temp[0];
-				}
-			}
-
 			if (skip == 0)
 				return i; // found
 		}
 		return -1; // not found
 	}
 
-	static int skipChar(String txt, String pat, int prRank, int[] right) {
+	public static int search(String txt, String pat, int[] right) throws MPIException {
 		int m = pat.length();
-		int offset = prRank * m;
-		for (int j = m - 1; j >= 0; j--) {
-			if (pat.charAt(j) != txt.charAt(j)) {
-				return Math.max(1, j + offset - right[txt.charAt(j)]);
+		int n = txt.length();
+		int skip;
+		for (int i = 0; i <= n - m; i += skip) {
+			skip = 0;
+			for (int j = m - 1; j >= 0; j--) {
+				if (pat.charAt(j) != txt.charAt(i + j)) {
+					skip = Math.max(1, j - right[txt.charAt(i + j)]);
+					break;
+				}
 			}
+			if (skip == 0)
+				return i; // found
 		}
-		return 0;
+		return -1; // not found
 	}
 
 	static String generateRandomString(int len) {
 		String chars = "abcdefghijklmnopqrstuvwxyz";
 		String nums = "0123456789";
-		String symbols = "        ";
+		String symbols = "   ";
 		String passSymbols = chars + nums + symbols;
 		Random rnd = new Random();
 		StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < len; i++) {
-			builder.append((char) rnd.nextInt(passSymbols.length()));
+			builder.append(passSymbols.charAt(rnd.nextInt(passSymbols.length())));
 		}
 		return String.valueOf(builder.toString());
 	}
@@ -164,27 +141,46 @@ public class MpiBoyerMoore {
 			m = Math.min(m, n);
 		}
 
+		int nProcessors = Math.min(MPI.COMM_WORLD.getSize(), n);
 		int myself = MPI.COMM_WORLD.getRank();
-		if (myself == ROOT) {
-			int nProcessors = Math.min(MPI.COMM_WORLD.getSize(), m);
 
+		if (myself == ROOT) {
 			String txt = generateRandomString(n);
 			String pat = generateRandomSubstring(txt, m);
 
-			double startTime = MPI.wtime();
-			MpiBoyerMoore boyermoore = new MpiBoyerMoore(pat, nProcessors);
-			int offset = boyermoore.search(txt);
-			double endTime = MPI.wtime();
-
-			// close all slave process
-			for (int i = 1; i < nProcessors; i++) {
-				MPI.COMM_WORLD.send(new byte[1], 1, MPI.BYTE, i, END_TAG);
-			}
+			int localSize = n / nProcessors;
 
 			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
-				// print results
+				// print input
 				System.out.println("\nFrom ROOT - text:    " + txt);
 			}
+
+			double startTime = MPI.wtime();
+			MpiBoyerMoore boyermoore = new MpiBoyerMoore(pat, nProcessors);
+
+			for (int i = 1; i < nProcessors; i++) {
+				int start = Math.max(i * localSize - m, 0);
+				int end = (i + 1) * localSize;
+				if (i == nProcessors - 1) {
+					end += n % nProcessors;
+				}
+				MPI.COMM_WORLD.send((pat + txt.substring(start, end)).toCharArray(), end - start + m, MPI.CHAR, i,
+						COMPUTE_TAG);
+			}
+
+			int offset = boyermoore.search(txt.substring(0, localSize));
+
+			if (offset == -1) {
+				for (int i = 1; i < nProcessors; i++) {
+					int[] temp = new int[1];
+					MPI.COMM_WORLD.recv(temp, 1, MPI.INT, i, COMPUTE_TAG);
+					if (temp[0] != -1) {
+						offset = temp[0];
+						break;
+					}
+				}
+			}
+			double endTime = MPI.wtime();
 
 			if (offset == -1) {
 				if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
@@ -201,25 +197,22 @@ public class MpiBoyerMoore {
 			}
 		} else {
 			int[] right = new int[R];
-			while (true) {
-				Status status = MPI.COMM_WORLD.probe(ROOT, MPI.ANY_TAG);
-				if (status.getTag() == END_TAG) {
-					break;
-				}
+			MPI.COMM_WORLD.recv(right, R, MPI.INT, ROOT, RIGHT_TAG);
+			Status status = MPI.COMM_WORLD.probe(ROOT, COMPUTE_TAG);
 
-				if (status.getTag() == RIGHT_TAG) {
-					MPI.COMM_WORLD.recv(right, R, MPI.INT, ROOT, RIGHT_TAG);
-					continue;
-				}
+			int bufferSize = status.getCount(MPI.CHAR);
+			char[] buffer = new char[bufferSize];
+			MPI.COMM_WORLD.recv(buffer, bufferSize, MPI.CHAR, ROOT, COMPUTE_TAG);
 
-				int localSize = status.getCount(MPI.CHAR) / 2;
-				char[] buffer = new char[localSize * 2];
-				MPI.COMM_WORLD.recv(buffer, localSize * 2, MPI.CHAR, ROOT, COMPUTE_TAG);
+			String temp = String.valueOf(buffer);
+			int offset = MpiBoyerMoore.search(temp.substring(m), temp.substring(0, m), right);
 
-				String temp = String.valueOf(buffer);
-				int offset = skipChar(temp.substring(0, localSize), temp.substring(localSize), myself, right);
-
+			int localSize = n / nProcessors;
+			int start = Math.max(myself * localSize - m, 0);
+			if (offset == -1) {
 				MPI.COMM_WORLD.send(new int[] { offset }, 1, MPI.INT, ROOT, COMPUTE_TAG);
+			} else {
+				MPI.COMM_WORLD.send(new int[] { offset + start }, 1, MPI.INT, ROOT, COMPUTE_TAG);
 			}
 		}
 
