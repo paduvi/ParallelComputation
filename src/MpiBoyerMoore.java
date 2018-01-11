@@ -66,8 +66,8 @@ public class MpiBoyerMoore {
 	 */
 	public int search(String txt) throws MPIException {
 		int temp = this.nProcessors;
-		while (temp-- > 0) {
-			int result = search(txt, temp);
+		while (temp > 0) {
+			int result = search(txt, temp--);
 			if (result != -1)
 				return result;
 		}
