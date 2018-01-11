@@ -112,18 +112,24 @@ public class BoyerMoore {
 		BoyerMoore boyermoore = new BoyerMoore(pat);
 		int offset = boyermoore.search(txt);
 		double endTime = System.currentTimeMillis();
-		
-		// print results
-		System.out.println("text:    " + txt);
+
+		if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+			// print results
+			System.out.println("text:    " + txt);
+		}
 
 		if (offset == -1) {
-			System.out.println("pattern mismatched: " + pat);
+			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+				System.out.println("pattern mismatched: " + pat);
+			}
 		} else {
-			System.out.print("pattern: ");
-			for (int i = 0; i < offset; i++)
-				System.out.print(" ");
-			System.out.println(pat);
-			
+			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+				System.out.print("pattern: ");
+				for (int i = 0; i < offset; i++)
+					System.out.print(" ");
+				System.out.println(pat);
+			}
+
 			System.out.printf("\nTotal Time: %.2f\n", (endTime - startTime));
 		}
 	}

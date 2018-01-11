@@ -181,16 +181,22 @@ public class MpiBoyerMoore {
 				MPI.COMM_WORLD.send(new byte[1], 1, MPI.BYTE, i, END_TAG);
 			}
 
-			// print results
-			System.out.println("\nFrom ROOT - text:    " + txt);
+			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+				// print results
+				System.out.println("\nFrom ROOT - text:    " + txt);
+			}
 
 			if (offset == -1) {
-				System.out.println("\nFrom ROOT - pattern mismatched: " + pat);
+				if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+					System.out.println("\nFrom ROOT - pattern mismatched: " + pat);
+				}
 			} else {
-				System.out.print("From ROOT - pattern: ");
-				for (int i = 0; i < offset; i++)
-					System.out.print(" ");
-				System.out.println(pat);
+				if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
+					System.out.print("From ROOT - pattern: ");
+					for (int i = 0; i < offset; i++)
+						System.out.print(" ");
+					System.out.println(pat);
+				}
 				System.out.printf("\nFrom ROOT - Total Time: %.2f\n", (endTime - startTime));
 			}
 		} else {
