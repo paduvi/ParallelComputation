@@ -52,27 +52,13 @@ public class StatisticBoyerMoore {
 				int m = (int) Math.pow(10, j);
 				int n = m * fraction;
 				String temp = i + "\t" + n + "\t" + m + "\t" + normalResult[j - 1];
-				double result = 0;
-				int success = 0;
-				for (int k = 0; k < times; k++) {
-					String command = "mpirun -np " + i + " java MpiBoyerMoore " + n + " " + m;
-					System.out.println("\n=============");
-					System.out.println(command);
-					ProcessBuilder builder = new ProcessBuilder(command.split(" "));
-					builder.redirectErrorStream(true);
-					Process pr = builder.start();
-					double tempResult = watch(pr);
-					if (tempResult != -1) {
-						result += tempResult;
-						success++;
-					}
-				}
-
-				if (success != 0) {
-					temp += "\t" + result / success;
-				} else {
-					temp += "\t-1";
-				}
+				String command = "mpirun -np " + i + " java MpiBoyerMoore " + n + " " + m;
+				System.out.println("\n=============");
+				System.out.println(command);
+				ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+				builder.redirectErrorStream(true);
+				Process pr = builder.start();
+				temp += "\t" + watch(pr);
 
 				Files.write(Paths.get("report-boyer.txt"), (temp + "\n").getBytes(), StandardOpenOption.CREATE,
 						StandardOpenOption.APPEND);
