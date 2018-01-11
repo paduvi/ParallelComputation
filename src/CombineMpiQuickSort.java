@@ -119,13 +119,6 @@ public class CombineMpiQuickSort {
 		MPI.COMM_WORLD.gather(localData, localSize, MPI.INT, globalData, localSize, MPI.INT, ROOT);
 
 		if (myself == ROOT) {
-
-			globalData = generateRandomArray(n, max);
-
-			if (Boolean.parseBoolean(System.getenv("DEBUG"))) {
-				System.out.println("From ROOT - Input array: " + Arrays.toString(globalData));
-			}
-
 			parallelQuickSort(globalData, 0, globalData.length - 1, myself, nProcessors, 0);
 			double endTime = MPI.wtime();
 
