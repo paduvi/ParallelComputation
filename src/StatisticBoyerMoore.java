@@ -32,7 +32,7 @@ public class StatisticBoyerMoore {
 		int np = 16;
 		int pow = 8;
 
-		int times = 10;
+		int times = 5;
 
 		double[] normalResult = new double[pow];
 		for (int i = 1; i <= pow; i++) {

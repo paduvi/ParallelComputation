@@ -127,12 +127,12 @@ public class MpiBoyerMoore {
 		String symbols = "        ";
 		String passSymbols = chars + nums + symbols;
 		Random rnd = new Random();
-		char[] password = new char[len];
+		StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < len; i++) {
-			password[i] = passSymbols.charAt(rnd.nextInt(passSymbols.length()));
+			builder.append((char) rnd.nextInt(passSymbols.length()));
 		}
-		return String.valueOf(password);
+		return String.valueOf(builder.toString());
 	}
 
 	static String generateRandomSubstring(String txt, int len) {
