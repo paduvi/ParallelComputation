@@ -30,7 +30,7 @@ public class StatisticQuickSort {
 		int np = 16;
 		int n = 9;
 
-		int times = 10;
+		int times = 5;
 		String[] classes = new String[] { "LinearMpiQuickSort", "RecursiveMpiQuickSort", "CombineMpiQuickSort" };
 
 		double[] normalResult = new double[n];
