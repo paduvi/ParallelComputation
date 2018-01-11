@@ -80,6 +80,18 @@ public class StatisticBoyerMoore {
 		}
 
 		int m = 10;
+
+		for (int i = 2; i <= pow; i++) {
+			int n = (int) Math.pow(10, i);
+			String command = "java BoyerMoore " + n + " " + m;
+			System.out.println("\n=============");
+			System.out.println(command);
+			ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+			builder.redirectErrorStream(true);
+			Process pr = builder.start();
+			normalResult[i - 1] = watch(pr);
+		}
+
 		for (int i = 1; i <= np; i++) {
 			for (int j = 2; j <= pow; j++) {
 				int n = (int) Math.pow(10, j);
