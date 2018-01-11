@@ -28,7 +28,7 @@ public class StatisticBoyerMoore {
 
 	public static void main(String[] args) throws IOException {
 		int np = 16;
-		int pow = 7;
+		int pow = 8;
 
 		int times = 5;
 
