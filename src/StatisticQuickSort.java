@@ -77,7 +77,6 @@ public class StatisticQuickSort {
 				}
 				Files.write(Paths.get("report-qsort.txt"), (temp + "\n").getBytes(), StandardOpenOption.CREATE,
 						StandardOpenOption.APPEND);
-				// builder.append(temp).append("\n");
 			}
 		}
 
