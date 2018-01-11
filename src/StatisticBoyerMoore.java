@@ -27,43 +27,12 @@ public class StatisticBoyerMoore {
 	}
 
 	public static void main(String[] args) throws IOException {
-		int fraction = 20;
-
 		int np = 16;
 		int pow = 7;
 
 		int times = 5;
 
 		double[] normalResult = new double[pow];
-		for (int i = 1; i <= pow; i++) {
-			int m = (int) Math.pow(10, i);
-			int n = m * fraction;
-			String command = "java BoyerMoore " + n + " " + m;
-			System.out.println("\n=============");
-			System.out.println(command);
-			ProcessBuilder builder = new ProcessBuilder(command.split(" "));
-			builder.redirectErrorStream(true);
-			Process pr = builder.start();
-			normalResult[i - 1] = watch(pr);
-		}
-
-		for (int i = 1; i <= np; i++) {
-			for (int j = 1; j <= pow; j++) {
-				int m = (int) Math.pow(10, j);
-				int n = m * fraction;
-				String temp = i + "\t" + n + "\t" + m + "\t" + normalResult[j - 1];
-				String command = "mpirun -np " + i + " java MpiBoyerMoore " + n + " " + m;
-				System.out.println("\n=============");
-				System.out.println(command);
-				ProcessBuilder builder = new ProcessBuilder(command.split(" "));
-				builder.redirectErrorStream(true);
-				Process pr = builder.start();
-				temp += "\t" + watch(pr);
-
-				Files.write(Paths.get("report-boyer.txt"), (temp + "\n").getBytes(), StandardOpenOption.CREATE,
-						StandardOpenOption.APPEND);
-			}
-		}
 
 		int m = 10;
 
