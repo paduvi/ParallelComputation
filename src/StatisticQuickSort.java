@@ -30,7 +30,6 @@ public class StatisticQuickSort {
 		int np = 16;
 		int n = 9;
 
-		int times = 5;
 		String[] classes = new String[] { "LinearMpiQuickSort", "RecursiveMpiQuickSort", "CombineMpiQuickSort" };
 
 		double[] normalResult = new double[n];
@@ -45,38 +44,23 @@ public class StatisticQuickSort {
 			normalResult[i - 1] = watch(pr);
 		}
 
-		// StringBuilder builder = new StringBuilder();
+		for (String clazz : classes) {
+			for (int i = 1; i <= np; i++) {
+				for (int j = 1; j <= n; j++) {
+					int m = (int) Math.pow(10, j);
+					String temp = i + "\t" + m + "\t" + normalResult[j - 1];
 
-		for (int i = 1; i <= np; i++) {
-			for (int j = 1; j <= n; j++) {
-				int m = (int) Math.pow(10, j);
-				String temp = i + "\t" + m + "\t" + normalResult[j - 1];
-				for (String clazz : classes) {
-					double result = 0;
-					int success = 0;
-					for (int k = 0; k < times; k++) {
-						String command = "mpirun -np " + i + " java " + clazz + " " + m;
-						System.out.println("\n=============");
-						System.out.println(command);
-						ProcessBuilder builder = new ProcessBuilder(command.split(" "));
-						builder.redirectErrorStream(true);
-						Process pr = builder.start();
-						double tempResult = watch(pr);
-						if (tempResult != -1) {
-							result += tempResult;
-							success++;
-						}
-					}
+					String command = "mpirun -np " + i + " java " + clazz + " " + m;
+					System.out.println("\n=============");
+					System.out.println(command);
+					ProcessBuilder builder = new ProcessBuilder(command.split(" "));
+					builder.redirectErrorStream(true);
+					Process pr = builder.start();
+					temp += "\t" + watch(pr);
 
-					if (success != 0) {
-						temp += "\t" + result / success;
-					} else {
-						temp += "\t-1";
-					}
-
+					Files.write(Paths.get("report-qsort.txt"), (temp + "\n").getBytes(), StandardOpenOption.CREATE,
+							StandardOpenOption.APPEND);
 				}
-				Files.write(Paths.get("report-qsort.txt"), (temp + "\n").getBytes(), StandardOpenOption.CREATE,
-						StandardOpenOption.APPEND);
 			}
 		}
 
