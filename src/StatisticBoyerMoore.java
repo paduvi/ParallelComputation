@@ -108,7 +108,7 @@ public class StatisticBoyerMoore {
 			for (int j = 2; j <= pow; j++) {
 				int n = (int) Math.pow(10, j);
 
-				for (int k = 0; k < 5; j++) {
+				for (int k = 0; k < 5; k++) {
 					String temp = i + "\t" + n;
 					String command = "mpirun -np " + i + " java MpiBoyerMoore " + n + " " + m;
 					System.out.println("\n=============");
