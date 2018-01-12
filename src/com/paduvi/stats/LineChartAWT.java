@@ -2,6 +2,8 @@ package com.paduvi.stats;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.spark.SparkConf;
@@ -29,7 +31,7 @@ public class LineChartAWT extends ApplicationFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public LineChartAWT(String applicationTitle, String chartTitle, Map<Integer, String> rawDataset) {
+	public LineChartAWT(String applicationTitle, String chartTitle, List<Tuple2<Integer, String>> rawDataset) {
 		super(applicationTitle);
 
 		LogAxis xAxis = new LogAxis("Number of Elements");
@@ -48,7 +50,7 @@ public class LineChartAWT extends ApplicationFrame {
 			renderer.setSeriesShapesVisible(i, true);
 		}
 
-		File imageFile = new File("boyer-2.png");
+		File imageFile = new File("boyer-3.png");
 		int width = 640;
 		int height = 480;
 		try {
@@ -63,19 +65,21 @@ public class LineChartAWT extends ApplicationFrame {
 		setContentPane(chartPanel);
 	}
 
-	private XYSeriesCollection createDataset(Map<Integer, Integer> rawDataset) {
-		XYSeries series = new XYSeries("Sequential");
-		XYSeries series2 = new XYSeries("Parallel");
-		for (Map.Entry<Integer, Integer> entry : rawDataset.entrySet()) {
-			int k = entry.getKey();
-			Integer v = entry.getValue();
-
-			series1.add(k, v1);
-			series2.add(k, v2);
+	private XYSeriesCollection createDataset(List<Tuple2<Integer, String>> rawDataset) {
+		Map<Integer, XYSeries> mapSeries = new HashMap<>();
+		for (Tuple2<Integer, String> tuple : rawDataset) {
+			if (!mapSeries.containsKey(tuple._1)) {
+				mapSeries.put(tuple._1, new XYSeries(tuple._1));
+			}
+			String[] parts = tuple._2.split(" ");
+			int n = Integer.parseInt(parts[0]);
+			double t = Double.parseDouble(parts[1]) / 10;
+			mapSeries.get(tuple._1).add(n, t);
 		}
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		dataset.addSeries(series1);
-		dataset.addSeries(series2);
+		for (Map.Entry<Integer, XYSeries> entry : mapSeries.entrySet()) {
+			dataset.addSeries(entry.getValue());
+		}
 		return dataset;
 	}
 
@@ -84,10 +88,13 @@ public class LineChartAWT extends ApplicationFrame {
 
 		SparkConf conf = new SparkConf().setAppName(LineChartAWT.class.getName()).setMaster(master);
 		JavaSparkContext context = new JavaSparkContext(conf);
-		Map<Integer, Integer> rawDataset = context.textFile("report/report-boyer2.txt").mapToPair(line -> {
+		List<Tuple2<Integer, String>> rawDataset = context.textFile("report/report-boyer.txt").mapToPair(line -> {
 			String[] parts = line.trim().split("\t");
-			return new Tuple2<Integer, Integer>(Integer.parseInt(parts[0]), Integer.parseInt(parts[2]));
-		}).reduceByKey((a, b) -> a + b).collectAsMap();
+			return new Tuple2<String, Double>(parts[0] + " " + parts[1], Double.parseDouble(parts[2]));
+		}).reduceByKey((a, b) -> a + b).mapToPair(tuple -> {
+			String[] parts = tuple._1.split(" ");
+			return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1] + " " + tuple._2.toString());
+		}).collect();
 
 		LineChartAWT chart = new LineChartAWT("Sequential vs Parallel", "Same Pattern size", rawDataset);
 
