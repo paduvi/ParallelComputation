@@ -36,7 +36,7 @@ public class LineChartAWT extends ApplicationFrame {
 		xAxis.setBase(10);
 		xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-		JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle, "Number of Elements", "Time (ms)",
+		JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle, "Number of Elements", "Time (s)",
 				createDataset(rawDataset), PlotOrientation.VERTICAL, true, true, false);
 
 		XYPlot plot = lineChart.getXYPlot();
@@ -63,16 +63,13 @@ public class LineChartAWT extends ApplicationFrame {
 		setContentPane(chartPanel);
 	}
 
-	private XYSeriesCollection createDataset(Map<Integer, String> rawDataset) {
-		XYSeries series1 = new XYSeries("Sequential");
+	private XYSeriesCollection createDataset(Map<Integer, Integer> rawDataset) {
+		XYSeries series = new XYSeries("Sequential");
 		XYSeries series2 = new XYSeries("Parallel");
-		for (Map.Entry<Integer, String> entry : rawDataset.entrySet()) {
+		for (Map.Entry<Integer, Integer> entry : rawDataset.entrySet()) {
 			int k = entry.getKey();
-			String v = entry.getValue();
+			Integer v = entry.getValue();
 
-			String[] parts = v.split(" ");
-			double v1 = Double.parseDouble(parts[0]);
-			double v2 = Double.parseDouble(parts[1]);
 			series1.add(k, v1);
 			series2.add(k, v2);
 		}
@@ -87,17 +84,12 @@ public class LineChartAWT extends ApplicationFrame {
 
 		SparkConf conf = new SparkConf().setAppName(LineChartAWT.class.getName()).setMaster(master);
 		JavaSparkContext context = new JavaSparkContext(conf);
-		Map<Integer, String> rawDataset = context.textFile("report/report-boyer2.txt").mapToPair(line -> {
+		Map<Integer, Integer> rawDataset = context.textFile("report/report-boyer2.txt").mapToPair(line -> {
 			String[] parts = line.trim().split("\t");
+			return new Tuple2<Integer, Integer>(Integer.parseInt(parts[0]), Integer.parseInt(parts[2]));
+		}).reduceByKey((a, b) -> a + b).collectAsMap();
 
-			return new Tuple2<Integer, String>(Integer.parseInt(parts[1]), parts[3] + " " + parts[4]);
-		}).reduceByKey((a, b) -> {
-			double v1 = Double.parseDouble(a.split(" ")[1]);
-			double v2 = Double.parseDouble(b.split(" ")[1]);
-			return a.split(" ")[0] + " " + Math.min(v1, v2);
-		}).collectAsMap();
-
-		LineChartAWT chart = new LineChartAWT("Sequential vs Parallel", "Increasing in number of Elements", rawDataset);
+		LineChartAWT chart = new LineChartAWT("Sequential vs Parallel", "Same Pattern size", rawDataset);
 
 		context.close();
 		chart.pack();
