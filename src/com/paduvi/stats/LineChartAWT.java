@@ -45,11 +45,6 @@ public class LineChartAWT extends ApplicationFrame {
 		// plot.setRangeAxis(yAxis);
 		plot.setDomainAxis(xAxis);
 
-		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-		for (int i = 0; i < 4; i++) {
-			renderer.setSeriesShapesVisible(i, true);
-		}
-
 		File imageFile = new File("boyer-3.png");
 		int width = 640;
 		int height = 480;
